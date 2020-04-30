@@ -1,0 +1,18 @@
+Package: fundr
+Title: Funding DashBoard
+Version: 0.0.0.9000
+Authors@R: person('Emrick', 'Liu', email = 'liuy@guandian.com.cn', role = c('cre', 'aut'))
+Description: PKG_DESC.
+License: MIT + file LICENSE
+Imports: 
+    config,
+    golem,
+    shiny,
+    htmltools,
+    shinymaterial,
+    readr,
+    readxl,
+    DT
+Encoding: UTF-8
+LazyData: true
+RoxygenNote: 7.1.0
