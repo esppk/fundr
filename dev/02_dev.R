@@ -17,17 +17,24 @@
 ## Add one line by package you want to add as dependency
 usethis::use_package( "shinymaterial" )
 usethis::use_package( "readr" )
+usethis::use_package( "purrr" )
 usethis::use_package( "readxl" )
 usethis::use_package( "DT" )
+usethis::use_package( "excelR" )
+usethis::use_package( "shinydashboard" )
+
+
+
 
 ## Add modules ----
 ## Create a module infrastructure in R/
 golem::add_module( name = "nav_tabs" ) # Name of the module
 golem::add_module( name = "data_input" ) # Name of the module
+golem::add_module( name = "pivot_view" )
 
 ## Add helper functions ----
 ## Creates ftc_* and utils_*
-golem::add_fct( "helpers" ) 
+golem::add_fct( "loadr" ) 
 golem::add_utils( "helpers" )
 
 ## External resources
