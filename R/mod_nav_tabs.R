@@ -15,20 +15,20 @@ mod_nav_tabs_ui <- function(id){
       # Place side-nav tabs within side-nav
       material_side_nav_tabs(
         side_nav_tabs = c(
-          "Example Side-Nav Tab 1" = "example_side_nav_tab_1",
-          "Example Side-Nav Tab 2" = "example_side_nav_tab_2"
+          "Input" = "input_tab",
+          "pivot" = "pivot_tab"
         ),
         icons = c("cast", "insert_chart")
       )
     ),
     # Define side-nav tab content
     material_side_nav_tab_content(
-      side_nav_tab_id = "example_side_nav_tab_1",
+      side_nav_tab_id = "input_tab",
       mod_data_input_ui(ns("data_input_ui_1"))
     ),
     material_side_nav_tab_content(
-      side_nav_tab_id = "example_side_nav_tab_2",
-      tags$h1("Second Side-Nav Tab Content")
+      side_nav_tab_id = "pivot_tab",
+      mod_pivot_view_ui("pivot_view_ui_1")
     )
   )
 }
@@ -40,6 +40,7 @@ mod_nav_tabs_server <- function(input, output, session){
   ns <- session$ns
   
   callModule(mod_data_input_server, "data_input_ui_1")
+  callModule(mod_pivot_view_server, "pivot_view_ui_1")
  
 }
     

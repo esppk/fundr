@@ -19,15 +19,17 @@ usethis::use_package( "shinymaterial" )
 usethis::use_package( "readr" )
 usethis::use_package( "readxl" )
 usethis::use_package( "DT" )
+usethis::use_package( "excelR" )
 
 ## Add modules ----
 ## Create a module infrastructure in R/
 golem::add_module( name = "nav_tabs" ) # Name of the module
 golem::add_module( name = "data_input" ) # Name of the module
+golem::add_module( name = "pivot_view" )
 
 ## Add helper functions ----
 ## Creates ftc_* and utils_*
-golem::add_fct( "helpers" ) 
+golem::add_fct( "load" ) 
 golem::add_utils( "helpers" )
 
 ## External resources

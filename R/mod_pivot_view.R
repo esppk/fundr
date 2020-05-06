@@ -1,4 +1,4 @@
-#' data_input UI Function
+#' pivot_view UI Function
 #'
 #' @description A shiny Module.
 #'
@@ -7,8 +7,9 @@
 #' @noRd 
 #' 
 #' @import excelR
+#'
 #' @importFrom shiny NS tagList 
-mod_data_input_ui <- function(id){
+mod_pivot_view_ui <- function(id){
   ns <- NS(id)
   tagList(
     h1("Data Input Here"),
@@ -21,10 +22,10 @@ mod_data_input_ui <- function(id){
   )
 }
     
-#' data_input Server Function
+#' pivot_view Server Function
 #'
 #' @noRd 
-mod_data_input_server <- function(input, output, session){
+mod_pivot_view_server <- function(input, output, session){
   ns <- session$ns
   
   data <- reactive({
@@ -50,8 +51,8 @@ mod_data_input_server <- function(input, output, session){
 }
     
 ## To be copied in the UI
-# mod_data_input_ui("data_input_ui_1")
+# mod_pivot_view_ui("pivot_view_ui_1")
     
 ## To be copied in the server
-# callModule(mod_data_input_server, "data_input_ui_1")
+# callModule(mod_pivot_view_server, "pivot_view_ui_1")
  
