@@ -1,0 +1,25 @@
+---
+title: "sketch"
+output: html_document
+---
+
+```{r}
+
+library(tidyverse)
+
+aprilBond %>% 
+  mutate_at(vars(2:5), as.numeric) %>% 
+  mutate(code = str_extract(stocks, "[0-9]+(?=\\()")) %>% 
+  mutate(code = case_when(
+    nchar(code) == 4 ~ str_c(code, ".HK"),
+    str_detect(code, "^6") ~ str_c(code, ".SH"),
+    TRUE ~ str_c(code, ".SZ")
+  )) %>% 
+  filter(lubridate::ymd(date) >= lubridate::ymd("2020-04-01")) %>% 
+  mutate(name = str_extract(stocks, "(?<=[0-9]{4,6}\\()[^\\(\\)]+(?=\\))")) %>% 
+  group_by(code, name) %>% 
+  summarise(sum = sum(total, na.rm = TRUE)) %>% 
+  drop_na() %>% 
+  arrange(desc(sum))
+```
+
