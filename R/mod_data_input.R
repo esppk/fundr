@@ -6,15 +6,22 @@
 #'
 #' @noRd 
 #' 
+#' @importFrom shinyWidgets sendSweetAlert 
 #'
 #' @importFrom shiny NS tagList 
+#' 
 mod_data_input_ui <- function(id){
   ns <- NS(id)
   tagList(
-    h1("Data Input Here"),
     fluidPage(
+      h1("Data Input Here"),
       fluidRow(
-        col_4(fileInput(ns("file"), label = "Upload File")),
+        col_4(fileInput(ns("file"), label = "Upload File"),
+              material_button(
+                input_id = ns("append"),
+                label = "Append",
+                depth = 2
+              )),
         col_6(DT::DTOutput(ns("preview")))
       )
     )
@@ -24,7 +31,8 @@ mod_data_input_ui <- function(id){
 #' data_input Server Function
 #'
 #' @noRd 
-mod_data_input_server <- function(input, output, session){
+mod_data_input_server <- function(input, output, session, db){
+  
   ns <- session$ns
   
   data <- reactive({
@@ -39,6 +47,30 @@ mod_data_input_server <- function(input, output, session){
            csv = readr::read_csv(input$file$datapath),
            validate("Invaldi file; please upload either csv or xlsx.")
     )
+  })
+  
+  observeEvent(input$append, {
+    
+    tryCatch({
+      data() %>% 
+        db$insert(.)
+      
+      sendSweetAlert(
+        session = session,
+        title = "Success !!",
+        text = "All in order",
+        type = "success")
+      
+    },
+    error = function(e) {
+      golem::print_dev(e)
+      sendSweetAlert(
+        session = session,
+        title = "Error !!",
+        text = "Error parsing the colnames; Please make sure your have column `firm`",
+        type = "error"
+      )
+    })
   })
   
   output$preview <- DT::renderDT({

@@ -21,7 +21,10 @@ usethis::use_package( "purrr" )
 usethis::use_package( "readxl" )
 usethis::use_package( "DT" )
 usethis::use_package( "excelR" )
-usethis::use_package( "shinydashboard" )
+usethis::use_package( "shinyWidgets" )
+usethis::use_package( "shinyjs" )
+usethis::use_package( "lubridate" )
+usethis::use_package( "mongolite" )
 
 
 
