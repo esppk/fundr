@@ -6,7 +6,9 @@
 #'
 #' @noRd 
 #' 
-#' @importFrom shinyWidgets sendSweetAlert 
+#' @import dplyr
+#' 
+#' @importFrom shinyWidgets sendSweetAlert actionBttn
 #'
 #' @importFrom shiny NS tagList 
 #' 
@@ -17,10 +19,11 @@ mod_data_input_ui <- function(id){
       h1("Data Input Here"),
       fluidRow(
         col_4(fileInput(ns("file"), label = "Upload File"),
-              material_button(
-                input_id = ns("append"),
-                label = "Append",
-                depth = 2
+              actionBttn(
+                inputId = ns("append"),
+                label = "Append", 
+                style = "fill",
+                color = "success"
               )),
         col_6(DT::DTOutput(ns("preview")))
       )
@@ -52,7 +55,17 @@ mod_data_input_server <- function(input, output, session, db){
   observeEvent(input$append, {
     
     tryCatch({
-      data() %>% 
+      
+      db$drop()
+      
+      data() %>%
+        mutate_at(vars(2:5), as.numeric) %>% 
+        mutate(code = str_extract(stocks, "[0-9]+(?=\\()")) %>% 
+        mutate(code = case_when(
+          nchar(code) == 4 ~ str_c(code, ".HK"),
+          str_detect(code, "^6") ~ str_c(code, ".SH"),
+          TRUE ~ str_c(code, ".SZ")
+        )) %>% 
         db$insert(.)
       
       sendSweetAlert(

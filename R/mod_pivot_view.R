@@ -56,8 +56,17 @@ mod_pivot_view_server <- function(input, output, session, db){
   
   data <- reactive({
     
-    # db$find()
-    fct_loadr()
+    
+    dat <- db$find()
+    
+    golem::print_dev(dat)
+    
+    if(!is.null(dat)) {
+      dat %>%
+        select(abbr, date, name, first, coupon, tenure, total) %>% 
+        mutate_at(vars(coupon, tenure, total), as.numeric)
+    }
+    # fct_loadr()
   })
 
   observe(
@@ -74,8 +83,8 @@ mod_pivot_view_server <- function(input, output, session, db){
     data() %>% 
       filter(.data$name == input$firm_name) %>% 
       group_by(name) %>% 
-      summarise(weight_cost = weighted.mean(coupon, amount, na.rm = TRUE), 
-                n = n(), sum = sum(amount))
+      summarise(weight_cost = weighted.mean(coupon, total, na.rm = TRUE), 
+                n = n(), sum = sum(total))
   })
 
   
@@ -85,8 +94,8 @@ mod_pivot_view_server <- function(input, output, session, db){
     base_tbl <- data() %>% 
       filter(month(date) >= which(month.abb == input$month[1]),
              month(date) <= which(month.abb == input$month[2])) %>% 
-      group_by(name, type) %>%
-      summarise(n = n(), sum = sum(amount))
+      group_by(name, first) %>%
+      summarise(n = n(), sum = sum(total))
     
     if(!type_filter$status){
       
@@ -94,7 +103,7 @@ mod_pivot_view_server <- function(input, output, session, db){
       
     } else {
       base_tbl %>% 
-        filter(.data$type == type_filter$type)
+        filter(.data$first == type_filter$type)
     }
     
   })
@@ -108,9 +117,9 @@ mod_pivot_view_server <- function(input, output, session, db){
     if(nrows > 0){
       
       tagList(!!!map(1:nrows, ~ material_card(
-        title = firm_tbl %>% slice(.x) %>% pull("type"),
+        title = firm_tbl %>% slice(.x) %>% pull("first"),
         depth = 3,
-        id = firm_tbl %>% slice(.x) %>% pull("type"),
+        id = firm_tbl %>% slice(.x) %>% pull("first"),
         divider = TRUE,
         color = "lime",
         shiny::tags$h5(firm_tbl %>% slice(.x) %>% pull("sum") %>% paste0(., "亿")),
@@ -123,9 +132,9 @@ mod_pivot_view_server <- function(input, output, session, db){
   output$tbl <- renderExcel({
     
     cols <- data.frame(
-      title = c("Amount", "date", "name", "type", "coupon", "tenure"),
-      width = rep(200, 6),
-      type = c("number", "text", "date", "text", "number", "number")
+      title = c("abbr", "date", "name", "first", "coupon", "tenure", "total"),
+      width = rep(200, 7),
+      type = c("text", "date", "text", "text", "number", "number", "number")
     )
     
     excelTable(data() %>% filter(name == input$firm_name) %>% 

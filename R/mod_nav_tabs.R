@@ -5,6 +5,8 @@
 #' @param id,input,output,session Internal parameters for {shiny}.
 #'
 #' @noRd 
+#' 
+#' @import mongolite
 #'
 #' @importFrom shiny NS tagList 
 mod_nav_tabs_ui <- function(id){
