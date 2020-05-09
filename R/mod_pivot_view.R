@@ -6,7 +6,7 @@
 #'
 #' @noRd 
 #' 
-#' @import excelR purrr
+#' @import excelR purrr stringr
 #' 
 #' @import dplyr shinyWidgets
 #' 
@@ -19,6 +19,12 @@ mod_pivot_view_ui <- function(id){
   fluidPage(
     fluidRow(
       col_3(
+        actionBttn(
+                inputId = ns("pull"),
+                label = "Pull", 
+                style = "fill",
+                color = "warning"
+              ),
         pickerInput(
           inputId = ns("firm_name"),
           label = "Select Firm", 
@@ -54,47 +60,57 @@ mod_pivot_view_server <- function(input, output, session, db){
   
   type_filter$status <- FALSE
   
-  data <- reactive({
+  data <- eventReactive(input$pull, {
     
-    
-    dat <- db$find()
-    
-    golem::print_dev(dat)
-    
-    if(!is.null(dat)) {
-      dat %>%
-        select(abbr, date, name, first, coupon, tenure, total) %>% 
-        mutate_at(vars(coupon, tenure, total), as.numeric)
-    }
-    # fct_loadr()
-  })
+      dat <- db$find()
 
-  observe(
+      # req(data()$stock_name)
+
+      if(!is.null(dat)) {
+        dat %>%
+          select(stock_name, abbr, date, name, first, coupon, tenure, total) %>%
+          mutate_at(vars(coupon, tenure, total), as.numeric)
+      }
+    # golem::print_dev(dat)
+    # fct_loadr()
+  }, ignoreInit = TRUE, ignoreNULL = TRUE)
+
+  observe({
+    
+    req(data()$stock_name)
+
+    
     updatePickerInput(
       session,
       inputId = "firm_name",
       selected = NULL,
-      choices = data()$name %>% unique()
+      choices = data()$stock_name %>% unique() %>% na.omit()
     )
-  )
+  })
+    
   
   output$vital <- renderTable({
     
-    data() %>% 
-      filter(.data$name == input$firm_name) %>% 
-      group_by(name) %>% 
-      summarise(weight_cost = weighted.mean(coupon, total, na.rm = TRUE), 
+    req(data()$stock_name)
+
+    data() %>%
+      filter(stock_name == input$firm_name) %>%
+      group_by(stock_name) %>%
+      summarise(weight_cost = weighted.mean(coupon, total, na.rm = TRUE),
                 n = n(), sum = sum(total))
+
+    
   })
 
   
   summary_tbl <- reactive({
     
+    req(data()$stock_name)
     
     base_tbl <- data() %>% 
       filter(month(date) >= which(month.abb == input$month[1]),
              month(date) <= which(month.abb == input$month[2])) %>% 
-      group_by(name, first) %>%
+      group_by(stock_name, first) %>%
       summarise(n = n(), sum = sum(total))
     
     if(!type_filter$status){
@@ -110,13 +126,17 @@ mod_pivot_view_server <- function(input, output, session, db){
   
   output$cards <- renderUI({
     
-    firm_tbl <- summary_tbl() %>% filter(name == input$firm_name)
+    req(data()$stock_name)
+    
+    firm_tbl <- summary_tbl() %>% filter(stock_name == input$firm_name)
     
     nrows <- nrow(firm_tbl)
+    
+    golem::print_dev(firm_tbl %>% slice(1) %>% pull("first"))
   
     if(nrows > 0){
       
-      tagList(!!!map(1:nrows, ~ material_card(
+      map(1:nrows, ~ material_card(
         title = firm_tbl %>% slice(.x) %>% pull("first"),
         depth = 3,
         id = firm_tbl %>% slice(.x) %>% pull("first"),
@@ -124,12 +144,14 @@ mod_pivot_view_server <- function(input, output, session, db){
         color = "lime",
         shiny::tags$h5(firm_tbl %>% slice(.x) %>% pull("sum") %>% paste0(., "亿")),
         shiny::tags$h5(firm_tbl %>% slice(.x) %>% pull("n") %>% paste0(., "起"))
-      )))
+      ))
     }
 
   })
  
   output$tbl <- renderExcel({
+    
+    req(data()$stock_name)
     
     cols <- data.frame(
       title = c("abbr", "date", "name", "first", "coupon", "tenure", "total"),
@@ -137,9 +159,10 @@ mod_pivot_view_server <- function(input, output, session, db){
       type = c("text", "date", "text", "text", "number", "number", "number")
     )
     
-    excelTable(data() %>% filter(name == input$firm_name) %>% 
+    excelTable(data() %>% filter(stock_name == input$firm_name) %>% 
                  filter(month(date) >= which(month.abb == input$month[1]),
-                        month(date) <= which(month.abb == input$month[2])),
+                        month(date) <= which(month.abb == input$month[2])) %>% 
+                 select(-stock_name),
                columns = cols, 
                search=TRUE, pagination = 10,
                autoFill = TRUE)

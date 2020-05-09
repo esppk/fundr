@@ -8,7 +8,7 @@ output: html_document
 library(tidyverse)
 
 aprilBond %>% 
-  mutate_at(vars(2:5), as.numeric) %>% 
+  mutate_at(vars(total, planned, tenure, coupon), as.numeric) %>% 
   mutate(code = str_extract(stocks, "[0-9]+(?=\\()")) %>% 
   mutate(code = case_when(
     nchar(code) == 4 ~ str_c(code, ".HK"),
@@ -16,7 +16,11 @@ aprilBond %>%
     TRUE ~ str_c(code, ".SZ")
   )) %>% 
   filter(lubridate::ymd(date) >= lubridate::ymd("2020-04-01")) %>% 
-  mutate(name = str_extract(stocks, "(?<=[0-9]{4,6}\\()[^\\(\\)]+(?=\\))")) %>% 
+  mutate(stock_name = str_extract(stocks, "(?<=[0-9]{4,6}\\()[^\\(\\)]+(?=\\))")) %>% 
+      group_by(stock_name, first) %>%
+      summarise(n = n(), sum = sum(total)) %>% 
+  filter(stock_name == "金融街") %>% 
+  slice(1) %>% pull("sum") %>% paste0(., "亿")
   group_by(code, name) %>% 
   summarise(sum = sum(total, na.rm = TRUE)) %>% 
   drop_na() %>% 
