@@ -60,13 +60,7 @@ mod_data_input_server <- function(input, output, session, db){
       
       data() %>%
         mutate_at(vars(total, planned, tenure, coupon), as.numeric) %>% 
-        mutate(code = str_extract(stocks, "[0-9]+(?=\\()")) %>% 
-        mutate(code = case_when(
-          nchar(code) == 4 ~ str_c(code, ".HK"),
-          str_detect(code, "^6") ~ str_c(code, ".SH"),
-          TRUE ~ str_c(code, ".SZ")
-        )) %>% 
-        mutate(stock_name = str_extract(stocks, "(?<=[0-9]{4,6}\\()[^\\(\\)]+(?=\\))")) %>% 
+        left_join(aprilnames %>% select(-long_name), by = "name") %>% 
         db$insert(.)
       
       sendSweetAlert(

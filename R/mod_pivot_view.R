@@ -132,7 +132,7 @@ mod_pivot_view_server <- function(input, output, session, db){
     
     nrows <- nrow(firm_tbl)
     
-    golem::print_dev(firm_tbl %>% slice(1) %>% pull("first"))
+    # golem::print_dev(firm_tbl %>% slice(1) %>% pull("first"))
   
     if(nrows > 0){
       

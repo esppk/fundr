@@ -15,8 +15,14 @@ aprilBond %>%
     str_detect(code, "^6") ~ str_c(code, ".SH"),
     TRUE ~ str_c(code, ".SZ")
   )) %>% 
-  filter(lubridate::ymd(date) >= lubridate::ymd("2020-04-01")) %>% 
+  # filter(lubridate::ymd(date) >= lubridate::ymd("2020-04-01")) %>% 
   mutate(stock_name = str_extract(stocks, "(?<=[0-9]{4,6}\\()[^\\(\\)]+(?=\\))")) %>% 
+  select("name", "long_name", "stock_name") %>% 
+  unique() %>% 
+  writexl::write_xlsx("aprilnames.xlsx")
+  
+  
+  
       group_by(stock_name, first) %>%
       summarise(n = n(), sum = sum(total)) %>% 
   filter(stock_name == "金融街") %>% 
