@@ -73,8 +73,7 @@ mod_pivot_view_server <- function(input, output, session, db, db2){
   type_filter$status <- FALSE
   
   data <- eventReactive({
-      input$pull
-      # input$confirm
+      input$pull | input$confirm
     }, {
     
       dat <- db$find()
@@ -291,13 +290,19 @@ mod_pivot_view_server <- function(input, output, session, db, db2){
   
   observeEvent(input$delete, {
     
-    changed <- excel_to_R(input$tbl)
-    
     confirmSweetAlert(
       session = session,
-      inputId = ns("confirm"),
+      inputId = "confirm",
       title = "Comfirm delete ?"
     )
+  })
+  
+  
+  
+  observeEvent(input$confirm, {
+    
+    changed <- excel_to_R(input$tbl)
+    
     
     del_str <- changed %>%  
       filter(delete == "del") %>% 
@@ -305,8 +310,7 @@ mod_pivot_view_server <- function(input, output, session, db, db2){
       # slice(1, 2) %>% 
       str_glue_data('{{"abbr": "{abbr}", "date": "{date}", "first": "{first}"}}')  
     
-     
-    req(input$confirm)
+    
     if (input$confirm) {
       walk(del_str, ~ db$remove(.))
     }

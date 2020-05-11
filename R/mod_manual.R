@@ -71,6 +71,17 @@ mod_manual_server <- function(input, output, session, db){
                 mutate_all( as.character) %>%
                 mutate_at(vars(total, coupon, tenure), as.numeric)
     )
+    
+    
+    
+
+    sendSweetAlert(
+      session = session,
+      title = "Success !!",
+      text = "Data has been uploaded",
+      type = "success"
+    )
+
 
     
   })
