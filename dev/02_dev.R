@@ -35,6 +35,7 @@ usethis::use_package( "stringr" )
 golem::add_module( name = "nav_tabs" ) # Name of the module
 golem::add_module( name = "data_input" ) # Name of the module
 golem::add_module( name = "pivot_view" )
+golem::add_module( name = "manual" )
 
 ## Add helper functions ----
 ## Creates ftc_* and utils_*

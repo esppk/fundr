@@ -24,6 +24,12 @@ mod_data_input_ui <- function(id){
                 label = "Append", 
                 style = "fill",
                 color = "success"
+              ),
+              actionBttn(
+                inputId = ns("extra"),
+                label = "Update Extra", 
+                style = "fill",
+                color = "success"
               )),
         col_6(DT::DTOutput(ns("preview")))
       )
@@ -34,7 +40,7 @@ mod_data_input_ui <- function(id){
 #' data_input Server Function
 #'
 #' @noRd 
-mod_data_input_server <- function(input, output, session, db){
+mod_data_input_server <- function(input, output, session, db, db2){
   
   ns <- session$ns
   
@@ -71,6 +77,7 @@ mod_data_input_server <- function(input, output, session, db){
       
     },
     error = function(e) {
+      
       golem::print_dev(e)
       sendSweetAlert(
         session = session,
@@ -79,6 +86,37 @@ mod_data_input_server <- function(input, output, session, db){
         type = "error"
       )
     })
+  })
+  
+  observeEvent(input$extra, {
+    
+    
+    tryCatch({
+      
+      db2$drop()
+      
+      data() %>%
+        db2$insert(.)
+      
+      sendSweetAlert(
+        session = session,
+        title = "Success !!",
+        text = "All in order",
+        type = "success")
+      
+    },
+    error = function(e) {
+      
+      golem::print_dev(e)
+      sendSweetAlert(
+        session = session,
+        title = "Error !!",
+        text = "Error parsing the colnames; Please make sure your have column `firm`",
+        type = "error"
+      )
+    })
+    
+    
   })
   
   output$preview <- DT::renderDT({
