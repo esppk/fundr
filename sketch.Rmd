@@ -38,7 +38,10 @@ aprilBond %>%
 
 ```{r}
 
-aprStock %>% semi_join(candidates, by = "stock_name")
+aprStock %>% inner_join(candidates, by = "stock_name")
+
+
+candidates %>% anti_join(aprStock, by = "stock_name")
 ```
 
 
@@ -47,15 +50,38 @@ aprStock %>% semi_join(candidates, by = "stock_name")
 
 ```{r}
 
-aprilBond %>% 
-  filter(str_detect(name, "华"))
+colnames(names) <- c("code", "name")
+
+names %>% 
+  mutate(code = case_when(
+    str_detect(code, "[A-Z]") ~ code, 
+    nchar(code) == 5 ~ str_remove(code, "^0") %>% str_c(".HK"),
+    str_detect(code, "^6") ~ paste0(code, ".SH"),
+    TRUE ~ str_c(code, ".SZ")
+  )) -> names
+  writexl::write_xlsx("names.xlsx")
 ```
 
 
 
+```{r}
+
+names %>% anti_join(stock, by = c("code"))
+
+stock$stock_name
+```
+
+```{r}
+
+aprilnames %>% anti_join(stock, by = "stock_name") %>% 
+  tidyr::drop_na()
+```
 
 
+```{r}
 
+
+```
 
 
 

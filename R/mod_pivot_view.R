@@ -78,15 +78,19 @@ mod_pivot_view_server <- function(input, output, session, db, db2, db3){
 
       dat <- db$find()
       
-      
-
       # req(data()$stock_name)
+      
+      man_tbl <- db3$find()
+      
+      if(nrow(man_tbl) != 0){
+        man_tbl <- mutate(man_tbl, total = as.numeric(total))
+      }
 
       if(!is.null(dat)) {
         dat %>%
           select(stock_name, abbr, date, name, first, coupon, tenure, total) %>%
           mutate_at(vars(coupon, tenure, total), as.numeric) %>% 
-          bind_rows(db3$find() %>% mutate(total = as.numeric(total) )) %>% 
+          bind_rows(man_tbl) %>% 
           mutate(date = lubridate::ymd(date)) 
           
       }
