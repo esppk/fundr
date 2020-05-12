@@ -26,6 +26,7 @@ usethis::use_package( "shinyjs" )
 usethis::use_package( "lubridate" )
 usethis::use_package( "mongolite" )
 usethis::use_package( "stringr" )
+usethis::use_package( "tidyr" )
 
 
 

@@ -31,5 +31,37 @@ aprilBond %>%
   summarise(sum = sum(total, na.rm = TRUE)) %>% 
   drop_na() %>% 
   arrange(desc(sum))
+  
+  
 ```
+
+
+```{r}
+
+aprStock %>% semi_join(candidates, by = "stock_name")
+```
+
+
+
+
+
+```{r}
+
+aprilBond %>% 
+  filter(str_detect(name, "华"))
+```
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 

@@ -46,14 +46,13 @@ mod_pivot_view_ui <- function(id){
           selected = month.abb[c(1, 12)]
         ),
         tableOutput(ns("vital")),
-        excelOutput(ns("tbl"), height = "100%"),
+        excelOutput(ns("tbl")),
         tags$br(),
         actionBttn(
           inputId = ns("delete"),
           label = "DELETE", 
-          style = "material-flat",
+          style = "stretch",
           color = "danger",
-          block = TRUE
         ),
         tags$br(),
         uiOutput(ns("pagebtns"))
@@ -65,7 +64,7 @@ mod_pivot_view_ui <- function(id){
 #' pivot_view Server Function
 #'
 #' @noRd 
-mod_pivot_view_server <- function(input, output, session, db, db2){
+mod_pivot_view_server <- function(input, output, session, db, db2, db3){
   ns <- session$ns
   
   type_filter <- reactiveValues()
@@ -76,7 +75,10 @@ mod_pivot_view_server <- function(input, output, session, db, db2){
       input$pull | input$confirm
     }, {
     
+
       dat <- db$find()
+      
+      
 
       # req(data()$stock_name)
 
@@ -84,41 +86,40 @@ mod_pivot_view_server <- function(input, output, session, db, db2){
         dat %>%
           select(stock_name, abbr, date, name, first, coupon, tenure, total) %>%
           mutate_at(vars(coupon, tenure, total), as.numeric) %>% 
-          mutate(date = lubridate::ymd(date))
+          bind_rows(db3$find() %>% mutate(total = as.numeric(total) )) %>% 
+          mutate(date = lubridate::ymd(date)) 
+          
       }
     # golem::print_dev(dat)
     # fct_loadr()
   }, ignoreInit = TRUE, ignoreNULL = TRUE)
+  
+  
+  extra <- eventReactive(input$pull, {
+    
+    dat <- db2$find()
+    
+    dat
+    
+  }, ignoreInit = TRUE, ignoreNULL = TRUE)
 
-  # observe({
-  #   
-  #   req(data()$stock_name)
-  # 
-  #   
-  #   updatePickerInput(
-  #     session,
-  #     inputId = "firm_name",
-  #     selected = NULL,
-  #     choices = candidates$stock_name
-  #     # choices = data()$stock_name %>% unique() %>% na.omit()
-  #   )
-  # })
-  #   
+
   
   output$vital <- renderTable({
     
-    req(data()$stock_name)
+    # req(data()$stock_name)
     
     # golem::print_dev(data() %>% filter(stock_name == input$firm_name))
-    
+    extra_tbl <- extra() %>% filter(stock_name == input$firm_name) 
+    # golem::print_dev(extra_tbl)
     # browser()
     data() %>%
       filter(stock_name == input$firm_name) %>%
       group_by(stock_name) %>%
       summarise(weight_cost = weighted.mean(coupon, total, na.rm = TRUE),
-                n = n(), sum = sum(total, na.rm = TRUE))
+                n = n(), sum = sum(total, na.rm = TRUE))  %>% 
+      left_join(extra_tbl, by = "stock_name")
 
-    
   })
 
   
@@ -193,6 +194,8 @@ mod_pivot_view_server <- function(input, output, session, db, db2){
   sorted_names <- reactive({
     
     req(data()$stock_name)
+    
+    n_name(0)
     
     data() %>% 
       filter(month(date) >= which(month.abb == input$month[1]),
@@ -312,7 +315,7 @@ mod_pivot_view_server <- function(input, output, session, db, db2){
     
     
     if (input$confirm) {
-      walk(del_str, ~ db$remove(.))
+      walk(del_str, function(.x) { db$remove(.x); db3$remove(.x)} )
     }
     
     

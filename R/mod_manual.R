@@ -67,7 +67,7 @@ mod_manual_server <- function(input, output, session, db){
     
     db$insert(changed %>%
                 mutate(stock_name = input$firm_name) %>% 
-                select(stock_name, date, first, total, coupon, tenure) %>%
+                select(stock_name, abbr, date, first, total, coupon, tenure) %>%
                 mutate_all( as.character) %>%
                 mutate_at(vars(total, coupon, tenure), as.numeric)
     )
