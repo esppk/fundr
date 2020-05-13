@@ -78,14 +78,6 @@ aprilnames %>% anti_join(stock, by = "stock_name") %>%
 ```
 
 
-```{r}
-
-
-```
-
-
-
-
 
 
 

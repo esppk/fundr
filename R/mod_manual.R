@@ -73,7 +73,6 @@ mod_manual_server <- function(input, output, session, db){
     )
     
     
-    
 
     sendSweetAlert(
       session = session,

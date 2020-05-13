@@ -88,7 +88,7 @@ mod_pivot_view_server <- function(input, output, session, db, db2, db3){
 
       if(!is.null(dat)) {
         dat %>%
-          select(stock_name, abbr, date, name, first, coupon, tenure, total) %>%
+          select(stock_name, abbr, date, name, first, coupon, tenure, total, currency) %>%
           mutate_at(vars(coupon, tenure, total), as.numeric) %>% 
           bind_rows(man_tbl) %>% 
           mutate(date = lubridate::ymd(date)) 
@@ -119,6 +119,11 @@ mod_pivot_view_server <- function(input, output, session, db, db2, db3){
     # browser()
     data() %>%
       filter(stock_name == input$firm_name) %>%
+      mutate(total = case_when(
+        currency == "USD" ~ total * 7,
+        currency == "HKD" ~ total / 7.8 * 7,
+        TRUE ~ total
+      )) %>% 
       group_by(stock_name) %>%
       summarise(weight_cost = weighted.mean(coupon, total, na.rm = TRUE),
                 n = n(), sum = sum(total, na.rm = TRUE))  %>% 
@@ -132,6 +137,11 @@ mod_pivot_view_server <- function(input, output, session, db, db2, db3){
     req(data()$stock_name)
     
     base_tbl <- data() %>% 
+      mutate(total = case_when(
+        currency == "USD" ~ total * 7,
+        currency == "HKD" ~ total / 7.8 * 7,
+        TRUE ~ total
+      )) %>% 
       filter(month(date) >= which(month.abb == input$month[1]),
              month(date) <= which(month.abb == input$month[2])) %>% 
       group_by(stock_name, first) %>%
@@ -178,11 +188,13 @@ mod_pivot_view_server <- function(input, output, session, db, db2, db3){
     req(data()$stock_name)
     
     cols <- data.frame(
-      title = c("abbr", "date", "name", "first", "coupon", "tenure", "total", "delete"),
-      width = rep(200, 8),
-      type = c("text", "date", "text", "text", "number", "number", "number", "dropdown"),
-      source = I(list(NA, NA,NA,NA,NA,NA,NA, c("del", "keep")))
+      title = c("abbr", "date", "name", "first", "coupon", "tenure", "total", "currency", "delete"),
+      width = rep(200, 9),
+      type = c("text", "date", "text", "text", "number", "number", "number", "text", "dropdown"),
+      source = I(list(NA, NA,NA,NA,NA,NA,NA, NA, c("del", "keep")))
     )
+    
+    # golem::print_dev(data() %>% filter(stock_name == input$firm_name))
     
     excelTable(data() %>% filter(stock_name == input$firm_name) %>% 
                  filter(month(date) >= which(month.abb == input$month[1]),
