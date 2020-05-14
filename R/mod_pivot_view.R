@@ -83,7 +83,8 @@ mod_pivot_view_server <- function(input, output, session, db, db2, db3){
       man_tbl <- db3$find()
       
       if(nrow(man_tbl) != 0){
-        man_tbl <- mutate(man_tbl, total = as.numeric(total))
+        # man_tbl <- mutate(man_tbl, coupon = as.numeric(coupon))
+        man_tbl <- mutate_at(man_tbl, vars(coupon, total, tenure), ~ as.numeric(.x))
       }
 
       if(!is.null(dat)) {
@@ -217,6 +218,11 @@ mod_pivot_view_server <- function(input, output, session, db, db2, db3){
       filter(month(date) >= which(month.abb == input$month[1]),
              month(date) <= which(month.abb == input$month[2])) %>% 
       semi_join(candidates, by = "stock_name") %>% 
+      mutate(total = case_when(
+        currency == "USD" ~ total * 7,
+        currency == "HKD" ~ total / 7.8 * 7,
+        TRUE ~ total
+      )) %>%
       group_by(stock_name) %>% 
       summarise(sum = sum(total, na.rm = TRUE)) %>% 
       arrange(desc(sum)) %>% 

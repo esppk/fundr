@@ -83,3 +83,16 @@ aprilnames %>% anti_join(stock, by = "stock_name") %>%
 
 
 
+```{r}
+
+off_extra$coupon
+```
+
+```{r}
+
+tibble(
+  coupon = c(NA, 7.875 , 5.625 , 5.125 , 3.850 , 9.970 , 5.750 ,12.000 ,11.500)
+) %>% 
+  mutate_at(vars(coupon), ~ as.numeric)
+```
+
