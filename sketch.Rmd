@@ -96,3 +96,26 @@ tibble(
   mutate_at(vars(coupon), ~ as.numeric)
 ```
 
+
+```{r}
+
+aprilBond %>% 
+  # filter(month(date) == 4) %>% 
+  mutate_at(vars(total, tenure, coupon), as.numeric) %>% 
+  left_join(aprilnames, by = "name") %>% 
+  mutate(name = if_else(!is.na(stock_name), stock_name, name)) %>% 
+  # filter(name== "万科企业")
+  group_by(name) %>% 
+  summarise(total = sum(total, na.rm = TRUE)) %>% 
+  arrange(desc(total))
+```
+
+```{r}
+
+aprilBond %>% 
+  # filter(month(date) == 4) %>%
+  mutate_at(vars(total, tenure, coupon), as.numeric) %>% 
+  filter(name == "万科") %>% 
+  summarise(mcost = weighted.mean(coupon, total))
+```
+
