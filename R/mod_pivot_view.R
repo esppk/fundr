@@ -10,6 +10,8 @@
 #' 
 #' @import dplyr shinyWidgets
 #' 
+#' @import waiter 
+#' 
 #' @importFrom lubridate month
 #'
 #' @importFrom shiny NS tagList 
@@ -17,6 +19,7 @@ mod_pivot_view_ui <- function(id){
   
   ns <- NS(id)
   fluidPage(
+    waiter::use_waiter(),
     fluidRow(
       col_3(
         tags$br(),
@@ -66,6 +69,8 @@ mod_pivot_view_ui <- function(id){
 #' @noRd 
 mod_pivot_view_server <- function(input, output, session, db, db2, db3){
   ns <- session$ns
+  
+  w <- Waiter$new(id = "tbl")
   
   type_filter <- reactiveValues()
   
@@ -188,6 +193,8 @@ mod_pivot_view_server <- function(input, output, session, db, db2, db3){
     
     req(data()$stock_name)
     
+    w$show()
+    
     cols <- data.frame(
       title = c("abbr", "date", "name", "first", "coupon", "tenure", "total", "currency", "delete"),
       width = rep(200, 9),
@@ -197,10 +204,14 @@ mod_pivot_view_server <- function(input, output, session, db, db2, db3){
     
     # golem::print_dev(data() %>% filter(stock_name == input$firm_name))
     
-    excelTable(data() %>% filter(stock_name == input$firm_name) %>% 
-                 filter(month(date) >= which(month.abb == input$month[1]),
-                        month(date) <= which(month.abb == input$month[2])) %>% 
-                 select(-stock_name) %>% mutate(delete = "keep"),
+    dat <- data() %>% filter(stock_name == input$firm_name) %>% 
+      filter(month(date) >= which(month.abb == input$month[1]),
+             month(date) <= which(month.abb == input$month[2])) %>% 
+      select(-stock_name) %>% mutate(delete = "keep")
+    
+    w$hide()
+    
+    excelTable(dat,
                columns = cols, 
                search=TRUE, pagination = 10,
                autoFill = TRUE)
