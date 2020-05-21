@@ -70,7 +70,7 @@ mod_pivot_view_ui <- function(id){
 mod_pivot_view_server <- function(input, output, session, db, db2, db3){
   ns <- session$ns
   
-  w <- Waiter$new(id = "tbl")
+  w <- Waiter$new(id = ns("tbl"))
   
   type_filter <- reactiveValues()
   
@@ -125,6 +125,8 @@ mod_pivot_view_server <- function(input, output, session, db, db2, db3){
     # browser()
     data() %>%
       filter(stock_name == input$firm_name) %>%
+      filter(month(date) >= which(month.abb == input$month[1]),
+             month(date) <= which(month.abb == input$month[2])) %>% 
       mutate(total = case_when(
         currency == "USD" ~ total * 7,
         currency == "HKD" ~ total / 7.8 * 7,
